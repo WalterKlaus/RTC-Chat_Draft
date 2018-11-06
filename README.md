@@ -1,6 +1,6 @@
 ## RTC-Chat_Draft
 
-#### node express mongo socket.io webRTC
+#### node express mongo passport socket.io webRTC
 
 simple basic try of a small chat system
 
