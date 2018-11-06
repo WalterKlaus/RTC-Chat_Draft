@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/charts.css">
+    <title>Virtual CustomView </title>
+
+</head>
+
+<body>
+<div>
+
+    <div class="page-header text-center">
+        <h1> <span class="fa fa-anchor"></span>Communautics CustomView / Virtual Service Center </h1>
+    </div>
+</div>
+<div>
+    <canvas id="canvas"></canvas>
+</div>
+</div>
+
+<div class="fett">
+    <br>
+    <p id="SLA">  SLA: 95% in 45 Sekunden</p>
+    <p id="SL">  SL:</p>
+    <p id="callTime">  actual average call duration: </p>
+    <p id="tots">  total available agents vs. call amount: </p>
+    <br>
+</div>
+<div ID="tableContainer">
+    <table id="table">
+        <thead>
+        <tr>
+            <th data-field="SITE">SITE</th>
+            <th data-field="SL">SL</th>
+            <th data-field="TOTAL">TOTAL</th>
+            <th data-field="VERFÜGBAR">VERFÜGBAR</th>
+            <th data-field="BESETZT">BESETZT</th>
+            <th data-field="FREI">FREI</th>
+            <th data-field="WARTESCHLANGE">SCHLEIFE / &#216</th>
+            <th data-field="English">English(b/w)</th>
+            <th data-field="German">German(b/w)</th>
+            <th data-field="French">French(b/w)</th>
+            <th data-field="Italian">Italian(b/w)</th>
+            <th data-field="Spanish">Spanish(b/w)</th>
+            <th data-field="Russian">Russian(b/w)</th>
+            <th data-field="Swedish">Swedish(b/w)</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+<div class="text-center ">
+    <br>
+    <br>
+    <br>
+    <p>Draft Application  <a href="http://walterklaus.de">2018 Walter Klaus</a>.</p>
+    <p><img src="../icons/chromeIco.png" alt="Chrome " />
+        <img src="../icons/foxIco.png" alt="FireFox" />
+        <img src="../icons/operaIco.png" alt="Opera" />
+        <a href="https://github.com/WalterKlaus/ACD_Sim" target="_blank">
+            <img src="../icons/smallGit.png" alt="See code on github" title="See code on github"  style="width:42px;height:42px;border:0;"/>
+        </a>
+    </p>
+    <p>First Steps with Node.js on UberSpace.</p>
+</div >
+
+<script src='/jquery.min.js'></script>
+<script src="/jquery-ui.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script src="/bootstrap-table.js"></script>
+<script src="/adapter.js"></script>
+<script src="/charts.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+</body>
+</html>

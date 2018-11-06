@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+	<title>Communautics</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<style>
+		body 		{ padding-top:80px; }
+	</style>
+</head>
+<body>
+<div class="container">
+
+	<div class="jumbotron text-center">
+		<h1><span class="fa fa-lock"></span> Welcome to the Communautics Application</h1>
+
+		<% if (message.length > 0) { %>
+		<div class="alert alert-danger"><%= message %></div>
+		<% } %>
+        <p><br>Signup or Login with:</p>
+
+		<a href="/login" class="btn btn-default"><span class="fa fa-user"></span> Local</a>
+		<a href="/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook"></span> Facebook</a>
+		<a href="/auth/google" class="btn btn-danger"><span class="fa fa-google-plus"></span> Google+</a>
+	</div>
+
+	<div class="text-center">
+		<p>Draft Application  <a href="http://walterklaus.de">2017 Walter Klaus</a>.</p>
+		<p>First Steps with Node.js on UberSpace</a>.</p>
+	</div>
+
+</div>
+</body>
+</html>

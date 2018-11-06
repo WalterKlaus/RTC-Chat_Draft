@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <title>CommunauticsChat</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <style>
+        body 		{ padding-top:80px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="jumbotron text-center">
+        <h1><span class="fa fa-sign-in"></span> Invite your Facebook people to the Communautics Application</h1>
+        <a href="/profile" class="btn btn-default"><span class="fa fa-anchor"></span> Or go back to Profile</a><br>
+        <% friends.forEach(function(el, index) {%>
+
+        <%= el.name%> <br>
+        <%});%>
+
+    </div>
+
+    <div class="text-center">
+        <p>Draft Application  <a href="http://walterklaus.de">2017 Walter Klaus</a>.</p>
+        <p>First Steps with Node.js on UberSpace.</p>
+    </div>
+
+</div>
+</body>
+</html>

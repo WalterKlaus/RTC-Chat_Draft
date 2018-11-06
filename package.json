@@ -1,0 +1,21 @@
+{
+  "name": "CommunauticsApp",
+  "version": "0.1.0",
+  "description": "Basic ssl with routed websocket",
+  "main": "server.js",
+  "author": "Walter Klaus",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "express.io": "^1.1.13",
+    "mongoose": "^4.13.17",
+    "morgan": "^1.8.1",
+    "passport": "^0.3.2",
+    "serve-favicon": "^2.4.3",
+    "socket.io": "^2.0.1",
+    "webrtc-adapter": "^3.4.3"
+  }
+}

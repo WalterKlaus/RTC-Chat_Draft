@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>CommunauticsChat</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <style>
+        body 		{ padding-top:80px; word-wrap:break-word; }
+        body.initial-hide {display: none;}
+    </style>
+    <style>
+        .test.disabled{
+            background: lightgrey;
+        }
+    </style>
+
+
+</head>
+
+<body class="initial-hide">
+<div id="container">
+    <div class="page-header text-center">
+        <h1><span class="fa fa-user"></span> Hi <span id="chatUser"><%= chatuser%></span>, <br> welcome to the </span>Communautics Chat </h1>
+        <a href="/logout" class="btn btn-default btn-sm" id="logout">Logout</a>
+        <a href="/profile" class="btn btn-default btn-sm" id="profile">Profile</a>
+
+        <button class="btn btn-default btn-sm" id="DeviceSettingsButton" >Use this Device Settings</button>
+        <button type="button" class="btn btn-warning" id="hangup" hidden>
+            <img style="width:16px;height:16px" src="../icons/hangup.png"> Hangup</button>
+
+    </div>
+
+    <div class="col-sm-6 chatters">
+        <div class="well chattersFrame">
+            <div class="well chatterButtons">
+                <h3><span class="fa fa-users"></span> Contact users</h3><br>
+                <% userlist.forEach(function(el, index) {%>
+                <button <%if(el['userBusy']){%>style="background:red"<%}
+                if(el['userOnline']){%>style="background:lightgreen"<%}
+                %>
+                        type="submit" class="btn btn-default users"  onclick="contact('<%= chatuser%>','<%= el['name']%>')"
+                        id="<%= el['name']%>" value ="<%= el['name']%>">
+                    <span class="fa fa-sign-in"></span> <%= el['name']%> </button>
+                <%});%>
+            </div>
+        </div>
+    </div>
+    <div class="settings" hidden>
+        <div class="select">
+            <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
+        </div>
+
+        <div class="select">
+            <label for="audioOutput">Audio output destination: </label><select id="audioOutput"></select>
+        </div>
+
+        <div class="select">
+            <label for="videoSource">Video source: </label><select id="videoSource"></select>
+        </div>
+    </div>
+    <div>
+        <video id="localVideo" autoplay muted style="transform:scale(-1,1); height: 15%; width: 15%"></video>
+    </div>
+    <div>
+        <video id="remoteVideo" autoplay style="height: 25%; width: 25%"></video>
+    </div>
+
+    <div class="col-sm-6 textchat">
+        <div class="well">
+            <textarea id="dataChannelSend" hidden></textarea>
+            <div id="buttons">
+                <button id="sendButton" hidden>Send</button>
+            </div>
+            <textarea id="dataChannelReceive" rows="12" cols="4" style="width:80%" hidden></textarea>
+        </div>
+    </div>
+    <div>
+        <input onchange="addFiles(this.files)" type="file" id="files" name="files[]" multiple hidden>
+        <progress id="sendProgress" max="0" value="0" hidden></progress>
+        <ul id="downloadList"></ul>
+    </div>
+</div>
+<div class="text-center">
+    <p>Draft Application  <a href="http://walterklaus.de">2017 Walter Klaus</a>.</p>
+    <p><img src="../icons/chromeIco.png" alt="Chrome " />
+        <img src="../icons/foxIco.png" alt="FireFox" />
+        <img src="../icons/operaIco.png" alt="Opera" /></p>
+    <p>First Steps with Node.js on UberSpace</a>.</p>
+</div >
+
+<script src='/jquery.min.js'></script>
+<script src="/jquery-ui.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script src="/bootbox.min.js"></script>
+<script src="/adapter.js"></script>
+<script src="/main.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+</body>
+</html>
