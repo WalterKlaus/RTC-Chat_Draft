@@ -7,7 +7,7 @@ simple basic try of a slim video chat system
 ## ACD_sim
 
 simple basic try of an 'Active Call Direction'-Simulator 
-and 'KPI'-controller
+and 'KPI'-control
 
 [Demo!](https://walterklaus.de:62246/chart) 
 
