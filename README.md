@@ -11,4 +11,10 @@ and 'KPI'-control
 
 [Demo!](https://walterklaus.de:62246/chart) 
 
+## SVG_Animation
+
+includes vectors on canvas
+
+[Demo!](https://walterklaus.de:62246/gearHead) 
+
 #### node express mongo passport socket.io webRTC
