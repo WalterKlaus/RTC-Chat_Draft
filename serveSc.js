@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var configDB = require('./config/database.js');
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://realcom_mongoadmin:oghuba3aiJ@localhost:31419/chat234?authSource=admin', {useNewUrlParser: true }, function(err) {
+mongoose.connect('mongodb://realcom_mongoadmin:xxxxxxxxx@localhost:31419/chat234?authSource=admin', {useNewUrlParser: true }, function(err) {
     if (err)
     { throw err;}
     console.log('DB connected ');
