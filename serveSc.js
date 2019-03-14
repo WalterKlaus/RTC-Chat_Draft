@@ -8,10 +8,10 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var configDB = require('./config/database.js');
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://realcom_mongoadmin:xxxxxxxlocalhost:31419/chat234', {auth:{authdb:"admin"}}, function(err) {
+mongoose.connect('mongodb://realcom_mongoadmin:oghuba3aiJ@localhost:31419/chat234?authSource=admin', {useNewUrlParser: true }, function(err) {
     if (err)
     { throw err;}
-    console.log('DB connected ' + configDB.url);
+    console.log('DB connected ');
 });
 require('./config/passport')(passport); // pass passport for configuration
 var options = {
@@ -23,11 +23,10 @@ var app = express();
 var server = https.createServer(options, app);
 app.use(favicon(__dirname + '/icons/favicon.ico'));
 io = require('socket.io').listen(server);
-// Make io accessible to our router
-app.use(function(req,res,next){
-    req.io = io;
-    next();
-});
+//app.use(function(req,res,next){
+//    req.io = io;
+//    next();
+//});
 app.set('view engine', 'ejs'); // set up ejs for templating
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(__dirname + '/'));
@@ -61,13 +60,35 @@ var lines = ['HW',
 ];
 var avgSL = 100;
 var avgCT = 0;
-//var totAg;
-//var totAm;
-var tot;
+var underUsl = [];
+underUsl.isUnder = false;
+durationUslCurr = 0;
+durationUslTot = 0;
+var tot = [{agents: 0, amount: 0}];
+var strAdjust = '';
+var strAdjustHeadcount = '';
+var strAdjustDuration = '';
+var adjust = 0;
+var adjustDuration = 0;
+var adjustHeadcount = 0
+//tot.agents = 0;
 var strAvgCt = '';
 var totWaitTime;
 var totCallTime;
 var totTalkTime;
+var serverStartTime = new Date();
+var isRecording = false;
+var recStartTime;
+var max;
+var aba = 0;
+var genCalls = 0;
+var fPrep;
+function addZero(i) {
+    if (i < 10) {
+        i = "0" + i;
+    }
+    return i;
+}
 // Remove site info on server start
 Sites.find({}, function(err, s){
     s.forEach(function(doc){
@@ -85,6 +106,7 @@ Calls.find({}, function (err,
     });
 });
 // initialize Sites on server start
+
 sites.forEach(function(name){
     var siteInfo    = new Sites();
     siteInfo.name = name;
@@ -99,38 +121,111 @@ sites.forEach(function(name){
         if(err) throw err;
     });
 });
+Sites.aggregate([
+    {
+        $group: {
+            '_id': null,
+            'agents': {$sum: '$agentsCount'},
+            'amount': {$sum: '$callAmount'} // amount könnten wir hier weglassen. Mal schaun
+        }
+    }
+],function (err, t) {
+    if(err){
+        console.log('TAerr: ', err);
+    }
+    max = t[0].agents + Math.floor(Math.random()*(t[0].agents / 7));// verhältnismässig oder absolut ???
+});
+var csvHeadSet;
 setInterval(generateCalls, 500);
+var oldMax = 0;
+var dur = 0;
+var maxDuration = 570000; //initial
 function generateCalls() {
     Calls.count({}, function( err, count){
         if(err) throw err;
-        if(count < 330){
+        if(max != oldMax){
+            oldMax = max;
+            console.log('max: ', max);
+        }
+        if(count < max-(Math.random()*max/10)){
+            //console.log('maxRand', max-(Math.random()*max/10));
             var newCall = new Calls();
             var jetzt = new Date();
-            var dann = new Date(jetzt.getTime() + 50000 + (Math.random() * 570000));
-            newCall.incomingCall = jetzt;
-            newCall.endingCall = dann;
-            newCall.lang = langs[Math.floor(Math.random() * langs.length)];
-            newCall.site = sites[Math.floor(Math.random() * sites.length)];
-            newCall.line = lines[Math.floor(Math.random() * lines.length)];
-            newCall.waitTime = 0;
-            newCall.duration = dann - jetzt;
-            newCall.callTaken = false; // hier können wir einen virtuellen ACD-Report erstellen, falls gewünscht
-            // hung up???
-            newCall.save();
+            var dann = new Date(jetzt.getTime() + 50000 + (Math.random() * maxDuration)); // maxDuration
+            dur = dann - jetzt;
+            var selSite = sites[Math.floor(Math.random() * sites.length)];
+            newCall.actAgents = 20;
+            Sites.findOne({name: selSite}, function (err, s) {
+//
+                if(err){
+                    console.log(err);
+                    if(s == null){
+                        console.log('no Site', selSite);
+                        return;
+                        throw err;
+                    }
+                }
+                newCall.actAgents = s.agentsCount;
+            })
+                .then(function (err) {
+                    if(newCall.actAgents == 20){
+                        //console.log('selSite: 20 ::', selSite, ' /', newCall.actAgents);// Die schmiessen wir raus
+                        return;
+                    }
+                    //console.log('selSite: ::', selSite, ' /', newCall.actAgents);
+                    newCall.incomingCall = jetzt;
+                    newCall.endingCall = dann;
+                    newCall.lang = langs[Math.floor(Math.random() * langs.length)];
+                    newCall.site = selSite;
+                    newCall.line = lines[Math.floor(Math.random() * lines.length)];
+                    newCall.waitTime = 0;
+                    newCall.duration = dur;
+                    newCall.callTaken = false;
+                    newCall.save()
+                        .then(function () {
+                            genCalls += 1;
+                        })
+                    ;
+                })
+            ;
         }
     })
         .then(removeCalls());
     ;
 };
 function removeCalls() {
+
     // remove hung up calls
     Calls.find({endingCall: {$lte: new Date()}}, function (err, calls) {
         if (err) throw (err);
         calls.forEach(function (c) {
+            if(!c.callTaken){
+                aba += 1;
+            }
+            // hier können wir einen virtuellen ACD-Report erstellen, falls gewünscht
+            if(isRecording){
+                var csv;
+                var data = c.site +
+                    ';' + c.actAgents +
+                    ';' + c.line +
+                    ';' + c.lang +
+                    ';' + c.incomingCall.toLocaleString() +
+                    ';' + (c.duration / 1000).toFixed(0) +
+                    ';' + (c.waitTime / 1000).toFixed(0) +
+                    ';' + c.callTaken + '\n';
+
+                try {
+                    fPrep += data;
+                } catch (err) {
+                    console.log('appendErr2');
+                    /* Handle the error */
+                }
+
+
+            }
+
             c.remove()
                 .then(function () {
-
-                    //console.log('remove succeeded:', c.id);
                 })
                 .catch(function(err){
                     console.log('remove error: ', err);
@@ -139,8 +234,26 @@ function removeCalls() {
     })
         .then(loopCalls);
 };
+
+async function asyncSave(obj) {
+    console.log('asyncSave', obj.name);
+    await obj.save();
+};
+
 function loopCalls() {
     // oldest first / fifo
+
+    // for await test
+
+    //for await (const s of Sites.find())(
+    //    console.log('site: ' , s.name);
+    //)
+    //const cursor = Sites.find().cursor();
+    //for (let s = await cursor.next(); s != null; s = await cursor.next()) {
+    //    console.log(s.symbol, price);
+    //    await s.save();
+    //}
+
     Sites.find({}, function (err, sitesInfo) {
         if(err) throw err;
         sitesInfo.forEach( function (s) {
@@ -152,26 +265,19 @@ function loopCalls() {
                 s.totalBusy =   (amount >= s.agentsCount) ? s.agentsCount         : amount                ;
                 s.agentsVacant = (amount >= s.agentsCount)           ? 0         : s.agentsCount - amount ;
 
-                s.save(function (err) {
-                    if(err){
-                        console.log('saving Site err: ', err);
-                    }
-                    //console.log('first Info: ', s.totalWaiting,' / ', s.totalBusy,' / ',s.callAmount, 'diff.: ', s.callAmount-(s.totalBusy + s.totalWaiting));
-                })
-                    .then(function (err) {
+                s.save()
+                    .then(function (sObj) {
                         var ind = 0;
                         calls.forEach( function (c) { // waiting or not? Ab hier haben wir den einzelnen call
-                            //console.log('c:', c);
                             ind += 1;
                             c.callTaken =   (ind <= s.agentsCount) ? true     : false;
-                            c.waitTime =    (c.callTaken) ? 0                   : new Date() - c.incomingCall;
+                            c.waitTime =    (c.callTaken) ? ((c.waitTime > 0) ? c.waitTime  : 0)  : new Date() - c.incomingCall;
                             c.save(function (err) {
                                 if(err){
                                     console.log('e: ', err);
                                 }
                             });
                         });
-
                     })
                 ;
             })
@@ -179,69 +285,66 @@ function loopCalls() {
                     if(err){
                         console.log('cSaveErr: ', err);
                     }
-                    //console.log('after csave: ', calls[0]);
+                    langs.forEach( function (l) {
+                        // debugger;
+                        Calls.count({lang: l, callTaken: false, site: s.name}, function (err, count) {
+
+
+                            s.callsWaiting.forEach(function (w) {
+                                if(w.lang == l){
+                                    w.count = count;
+                                    //w.save(function (err) {
+                                    //    if(err){
+                                    //        console.log('err: ', err);
+                                    //    }
+                                    //});
+                                    //await s.save();
+
+                                    asyncSave(s);
+                                    //s.save();
+                                }
+                            });
+                            //s.agentsBusy.forEach(function (b) {
+                            //    if(b.lang == l){
+                            //        b.count = count;
+                            //        //b.save()
+                            //        //    .then(function () {
+                            //        //    })
+                            //        //;
+                            //        // await s.save();
+                                   asyncSave(s);
+                            //        //s.save();
+                            //    }
+                            //});
+                        })
+                        //asyncSave(s);
+                        //.then(function () {
+                        //    Calls.count({lang: l, callTaken: true, site: s.name}, function (err, count) {
+                        //    });
+//
+                        //})
+
+                        ;
+                    })
                     Calls.aggregate([
                         {$match: {callTaken: false, site: s.name}},
                         {$group:{_id: 0, average: {$avg: '$waitTime'}}}
                     ], function (err, a) {
                         if(a[0] != undefined){
-                            //console.log('avg: ', a, ' / ', a[0].average);
                             s.avgWaitTime = a[0].average;
                         }
                     });
                     Calls.aggregate([
-                        {$match: {waitTime: {$gte: 45000}, site: s.name}},
+                        {$match: {waitTime: {$gte: 45000}, site: s.name, callTaken: false}},
                         {$count:'under45'}
                     ], function (err, a) {
                         if(a[0] != undefined){
                             s.serviceLevel = (100-((a[0].under45/s.callAmount)*100)).toFixed(1);
-                            //console.log('SL: ', s.serviceLevel.toFixed(1));
                         }
                     });
 
-                    langs.forEach(function (l) {
-                        Calls.count({lang: l, callTaken: false, site: s.name}, function (err, count) {
-                            //console.log('SiteLangCount:', s.name, ' / ', l, ' / ', count);
-                            s.callsWaiting.forEach(function (w) {
-                                if(w.lang == l){
-                                    w.count = count;
-                                    w.save(function (err) {
-                                        if(err){
-                                            console.log('err: ', err);
-                                        }
-                                    });
-                                }
-                            });
-                        })
-                            .then(function () {
-                                Calls.count({lang: l, callTaken: true, site: s.name}, function (err, count) {
-                                    s.agentsBusy.forEach(function (b) {
-                                        if(b.lang == l){
-                                            b.count = count;
-                                            b.save(function (err) {
-                                                if(err){
-                                                    console.log('err: ', err);
-                                                }
-                                            })
-                                                .then(function () {
-                                                    s.save(function (err) {
-                                                        if(err){
-                                                            console.log('err: ', err);
-                                                        }
-                                                        //console.log('afterSave: ', s);
-                                                    });
-                                                })
-                                            ;
-                                        }
-                                    });
-                                });
+                });
 
-                            })
-
-                        ;
-                    })
-                })
-            ;
         });
         Sites.aggregate([
             {
@@ -254,13 +357,22 @@ function loopCalls() {
             if(err){
                 console.log('err: ', err);
             }
-            //console.log('slFirst: ', SLoa);
             if(SLoa[0] != undefined){
-                //console.log('sl: ', SLoa[0].SLoverAll);
                 avgSL = SLoa[0].SLoverAll;
+                if(avgSL < 95){
+                    if(!underUsl.isUnder){
+                        underUsl.dtStart = new Date();
+                    }
+                    underUsl.isUnder = true;
+                    durationUslCurr = new Date() - underUsl.dtStart;
+                }else{
+                    if(underUsl.isUnder){
+                        underUsl.isUnder = false;
+                        durationUslTot += durationUslCurr;
+                    }
+                }
             }
         });
-        //'talkTimeOverAll': {$sum: {$substract: ['$callDuration', '$waitTime']}}
         Calls.aggregate([
             {
                 $group: {
@@ -275,50 +387,97 @@ function loopCalls() {
             if(avgTalkTime[0] != undefined){
                 avgCT = avgTalkTime[0].avgTalkTimeOverAll;
                 var d = new Date(1000*Math.round(avgCT/1000));
-                function addZero(i) {
-                    if (i < 10) {
-                        i = "0" + i;
-                    }
-                    return i;
-                }
                 strAvgCt =  d.getUTCMinutes() + ':' + addZero(d.getUTCSeconds());
-                console.log('callTime: ', strAvgCt );
             }
         });
         Sites.aggregate([
             {
                 $group: {
                     '_id': null,
-                    'totAgents': {$sum: '$agentsCount'},
-                    'totAmount': {$sum: '$callAmount'}
+                    'agents': {$sum: '$agentsCount'},
+                    'amount': {$sum: '$callAmount'}
                 }
             }
         ],function (err, t) {
             if(err){
                 console.log('TAerr: ', err);
             }
-            console.log('tot: ', t);
             tot = t;
-            //if(totAgents[0] != undefined){
-            //    avgCT = avgTalkTime[0].avgTalkTimeOverAll;
-            //    var d = new Date(1000*Math.round(avgCT/1000));
-            //    function addZero(i) {
-            //        if (i < 10) {
-            //            i = "0" + i;
-            //        }
-            //        return i;
-            //    }
-            //    strAvgCt =  d.getUTCMinutes() + ':' + addZero(d.getUTCSeconds());
-            //    console.log('callTime: ', strAvgCt );
-            //}
         });
 
-        //console.log('avgSl: ', avgSL);
-        io.sockets.emit('event', sitesInfo, avgSL.toFixed(1), strAvgCt, tot);
+        var d = new Date(1000*Math.round(maxDuration/1000));
+        strDur =  d.getUTCMinutes() + ':' + addZero(d.getUTCSeconds());
+        io.sockets.emit('event', sitesInfo, avgSL.toFixed(1), strAvgCt, tot, serverStartTime.toLocaleString(), durationUslCurr, durationUslTot, strAdjust, strAdjustDuration, strAdjustHeadcount, max, strDur, aba, genCalls);
     });
 };
 // retrieve callAmount etc for our client table
-//app.io = io.sockets.on('connection', function(socket) {
-//});
+app.io = io.sockets.on('connection', function(socket) {
+    socket.on('adjust', function (val) {
+        strAdjust = val;
+        adjust = Number(val);
+        max += max / 100 * adjust;
+        console.log('adj: ' , max);
+        socket.broadcast.emit('adjust', val);
+    });
+    socket.on('adjustDuration', function (val) {
+        strAdjustDuration = val;
+        adjustDuration = Number(val);
+        maxDuration += maxDuration / 100 * adjustDuration;
+        socket.broadcast.emit('adjustDuration', val);
+    });
+    socket.on('adjustHeadcount', function (val) {
+        strAdjustHeadcount = val;
+        adjustHeadcount = Number(val);
+        Sites.find({}, function(err, sites){
+            sites.forEach(function(s){
+                s.agentsCount +=  s.agentsCount * adjustHeadcount / 100;
+                s.agentsCount = s.agentsCount.toFixed(0);
+                s.save(function(err){
+                    if(err) throw err;
+                });
+            });
+        });
+        socket.broadcast.emit('adjustHeadcount', val);
+    });
+    socket.on('recStartedAt', function (val){
+        isRecording = false;
+        console.log('recStarted');
+        socket.broadcast.emit('recStartedAt', val);
+
+        fPrep = '';
+        isRecording = true;
+    });
+    socket.on('recStopped', function () {
+
+        isRecording = false;
+        console.log('rec stopped');
+        socket.broadcast.emit('recStoppedByClient');
+        var f = '../../comBase/acd.csv';
+        if(fs.existsSync(f)){
+            fs.unlinkSync(f);
+            console.log('unlinked');
+        }
+        if(fs.existsSync(f)){
+            console.log('not unlinked');
+        }
+        if(fPrep == ''){
+            return;
+        }
+        try{
+            fs.appendFileSync(f, 'site, actAgents, line, lang, incomingCall, duration, waitTime, taken\n' + fPrep);
+            console.log('The "data to append" was appended to file!', fPrep);
+        }catch(e){
+            console.log('err occured on append: ', e);
+            throw(e);
+        }
+    });
+    socket.on('unloaded', function () {
+        if(io.sockets.length < 1){
+            isRecording = false;
+            console.log('unload');
+        }
+    });
+});
 server.listen(port);
 console.log('Server listens on port: ', port);
+
