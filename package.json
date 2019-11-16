@@ -11,7 +11,7 @@
     "express": "^4.15.2",
     "express-session": "^1.15.2",
     "express.io": "^1.1.13",
-    "mongoose": "^4.13.17",
+    "mongoose": "^5.7.11",
     "morgan": "^1.8.1",
     "passport": "^0.3.2",
     "serve-favicon": "^2.4.3",
