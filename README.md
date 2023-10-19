@@ -19,4 +19,4 @@ and 'KPI'-control
 
 includes vectors on canvas
 
-[Demo!](https://walterklaus.de:44840/gearHead) 
+[Demo!](https://walterklaus.de:44840) 
